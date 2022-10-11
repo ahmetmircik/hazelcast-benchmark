@@ -1,19 +1,32 @@
 package main
 
 import (
-    "net"
-    "strconv"
+	"context"
+	"net"
+	"strconv"
 
-    "github.com/hazelcast/hazelcast-go-client"
-    "github.com/hazelcast/hazelcast-go-client/config/property"
-    "github.com/hazelcast/hazelcast-go-client/core/logger"
+	"github.com/hazelcast/hazelcast-go-client"
+    // "github.com/hazelcast/hazelcast-go-client/nearcache"
+
 )
 
 func newClient() (hazelcast.Client, error) {
-    config := hazelcast.NewConfig()
-    config.SetProperty(property.LoggingLevel.Name(), logger.ErrorLevel)
-    config.GroupConfig().SetName(clusterName)
-    networkConfig := config.NetworkConfig()
-    networkConfig.AddAddress(net.JoinHostPort(host, strconv.Itoa(port)))
-    return hazelcast.NewClientWithConfig(config)
+	config := hazelcast.Config{}
+
+    // ec := nearcache.EvictionConfig{}
+	// ec.SetPolicy(nearcache.EvictionPolicyLFU)
+	// ec.SetSize(keyCount)
+	// ncc := nearcache.Config{
+	// 	Name:     "benchmark",
+	// 	Eviction: ec,
+	// }
+	// ncc.SetInvalidateOnChange(true)
+	// config.AddNearCache(ncc)
+
+	//config.Logger.Level=logger.ErrorLevel
+	config.Cluster.Name = clusterName
+	config.Cluster.Network.SetAddresses(net.JoinHostPort(host, strconv.Itoa(port)))
+	ctx := context.TODO()
+	client, err := hazelcast.StartNewClientWithConfig(ctx, config)
+	return *client, err
 }
