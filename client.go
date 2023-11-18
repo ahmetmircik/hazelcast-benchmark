@@ -1,19 +1,18 @@
 package main
 
 import (
-    "net"
-    "strconv"
+	"context"
+	"net"
+	"strconv"
 
-    "github.com/hazelcast/hazelcast-go-client"
-    "github.com/hazelcast/hazelcast-go-client/config/property"
-    "github.com/hazelcast/hazelcast-go-client/core/logger"
+	"github.com/hazelcast/hazelcast-go-client"
 )
 
-func newClient() (hazelcast.Client, error) {
-    config := hazelcast.NewConfig()
-    config.SetProperty(property.LoggingLevel.Name(), logger.ErrorLevel)
-    config.GroupConfig().SetName(clusterName)
-    networkConfig := config.NetworkConfig()
-    networkConfig.AddAddress(net.JoinHostPort(host, strconv.Itoa(port)))
-    return hazelcast.NewClientWithConfig(config)
+func newClient(ctx context.Context) (*hazelcast.Client, error) {
+	config := hazelcast.NewConfig()
+	config.Logger.Level = "error"
+	config.Cluster.Name = clusterName
+	networkConfig := config.Cluster.Network
+	networkConfig.SetAddresses(net.JoinHostPort(host, strconv.Itoa(port)))
+	return hazelcast.StartNewClientWithConfig(ctx, config)
 }
